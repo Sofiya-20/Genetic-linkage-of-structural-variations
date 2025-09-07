@@ -2,7 +2,7 @@ library(dplyr)
 library(stringr)
 
 # Step 1: Get all sv_overlap files
-sv_files <- list.files("~/tre1_eqtl/alleqtls_analysis/testset_07.30/SV_overlap_test_all", pattern = ".*\\_allsvs.txt$", full.names = TRUE)
+sv_files <- list.files("~/Documents/GitHub/Genetic-linkage-of-structural-variations/Step3_mergingSVsandprefiltering/Control_set/SVs_overlap_control", pattern = ".*\\_allsvs.txt$", full.names = TRUE)
 
 # Step 2: Collect all allele–SNP–SV–genotype records
 allele_sv_records <- list()
@@ -32,7 +32,7 @@ for (file in sv_files) {
 n_distinct(allele_sv_records$gene)
 
 head(allele_sv_records)
-##assigning a unique name to unique sv id for our understanding
+##assigning a unique name to unique sv id 
 
 
 
@@ -66,14 +66,13 @@ full_data <- merged_data_none %>%
 n_distinct(full_data$gene)
 write.csv(full_data, "full_datasvstestallsvs.csv")
 
-full_data_test = fread("~/tre1_eqtl/alleqtls_analysis/test_set/full_datasvsallgeno.csv")
 
 # 0) Start from your full data
 # full_data2: columns include top_SNP, allele, genotype, sv_name, gene, ...
 
-full_data_test = fread("~/tre1_eqtl/alleqtls_analysis/analysis_08.25/control_selection/control_snps_quantiles/full_data_control_allsvs.csv")
+full_data = fread("~/Documents/GitHub/Genetic-linkage-of-structural-variations/Step3_mergingSVsandprefiltering/Control_set/output_files/full_data_control_allgenes.csv")
 
-full_data2 <- full_data_test %>% filter(!genotype %in% c("B104", "B73", "Mo17"))
+full_data2 <- full_data %>% filter(!genotype %in% c("B104", "B73", "Mo17"))
 
 n_distinct(full_data2$genotype)
 # 1) Remove heterozygous calls first
@@ -124,44 +123,6 @@ df <- filtered_test %>%
 exclude_none <- FALSE
 
 
-prana = fread("~/tre1_eqtl/alleqtls_analysis/analysis_08.25/control_selection/control_snps_quantiles/fulldatacontrol_filteredforMAF.csv")
-
-
-fix_cutoff <- 1.0   # use 1.0 for strict fixation; try 0.95 or 0.90 for near-fixation
-
-geno_sets <- df %>%
-  distinct(top_SNP, allele, genotype, sv_name) %>%
-  { if (exclude_none) filter(., sv_name != "none") else . } %>%
-  group_by(top_SNP, allele, genotype) %>%
-  summarise(svs = list(sort(unique(sv_name))), .groups = "drop")
-
-geno_sets <- geno_sets %>%
-  mutate(
-    svs = lapply(svs, function(x) {
-      x <- sort(unique(x))
-      x <- x[!is.na(x) & nzchar(x)]   # drop NAs and ""
-      if (length(x) == 0) "none" else x
-    })
-  )
-
-geno_sets <- df %>%
-  mutate(sv_name = coalesce(na_if(sv_name, ""), "none")) %>%  # NA/"" -> "none"
-  distinct(top_SNP, allele, genotype, sv_name) %>%
-  group_by(top_SNP, allele, genotype) %>%
-  summarise(svs = list(sort(unique(sv_name))), .groups = "drop")
-
-sum(geno_sets$svs == "none" )
-
-
-head(geno_sets)
-
-geno_sets %>% head()
-
-
-head(geno_sets)
-
-
-## second part testing for perfect match
 
 write.csv(filtered_df2, "Filteredforeverything_JAMES08.28.csv")
 

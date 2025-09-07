@@ -2,22 +2,19 @@ library(data.table)
 library(dplyr)
 library(tidyr)
 library(purrr)
-library(readr)    # for write_rds if you want
+library(readr)   
 
-# -----------------------------
-# 0) Load & normalize
-# -----------------------------
-filtered_test <- fread("~/tre1_eqtl/alleqtls_analysis/analysis_08.25/testset_07.30/Filteredforeverything_JAMES08.28.csv",
+filtered_test <- fread("~/Documents/GitHub/Genetic-linkage-of-structural-variations/Step3_mergingSVsandprefiltering/Test_set/output_files/filtered_final_test/FilteredforMAF08.28.csv",
                                          data.table = FALSE, header = TRUE)
 head(filtered_test)
 n_distinct(filtered_test$genotype)
-filtered_test <- filtered_test[, -(1:2)]  # drop first two cols if they’re row indices, etc.
+filtered_test <- filtered_test[, -(1:2)] 
 
 df <- filtered_test %>%
   mutate(sv_name = coalesce(na_if(sv_name, ""), "none"))  # normalize NA/"" -> "none"
 n_distinct(df$sv_name)
 exclude_none <- FALSE
-fix_cutoff  <- 1.0  # retained but unused here (you can use it later if you do near-fixation checks)
+
 
 
 # 1) Genotype-level SV lists (unfiltered)
@@ -63,22 +60,8 @@ sv_counts <- geno_sets %>%
 sv_extremes <- sv_counts %>% filter(n_genotypes < low_thr | n_genotypes > high_thr)
 sv_mid      <- sv_counts %>% filter(n_genotypes >= low_thr, n_genotypes <= high_thr)
 
-# -----------------------------
-# 3) Rebuild genotype SV lists, but FILTER **SVs** only
-#    (keep the (SNP, allele, genotype) rows)
-# -----------------------------
 
-# 3a) Keep ONLY extreme SVs
-geno_sets_extremes <- geno_sets %>%
-  unnest_longer(svs, values_to = "sv_name") %>%
-  mutate(sv_name = na_if(sv_name, ""),
-         sv_name = ifelse(sv_name == "none", NA_character_, sv_name)) %>%
-  semi_join(sv_extremes %>% select(top_SNP, sv_name), by = c("top_SNP", "sv_name")) %>%  # drop bad SVs only
-  group_by(top_SNP, allele, genotype) %>%
-  summarise(svs = list(sort(unique(sv_name))), .groups = "drop") %>%
-  mutate(svs = lapply(svs, function(x) if (length(x) == 0) "none" else x))
-
-# 3b) Keep ONLY mid-frequency SVs
+# 3 Keep ONLY mid-frequency SVs
 geno_sets_mid <- geno_sets %>%
   unnest_longer(svs, values_to = "sv_name") %>%
   mutate(sv_name = na_if(sv_name, ""),
@@ -88,14 +71,10 @@ geno_sets_mid <- geno_sets %>%
   summarise(svs = list(sort(unique(sv_name))), .groups = "drop") %>%
   mutate(svs = lapply(svs, function(x) if (length(x) == 0) "none" else x))
 
-# Optional: quick view
-sv_extremes_summary <- sv_extremes %>% arrange(top_SNP, desc(n_genotypes))
-n_distinct_snps_mid <- n_distinct(geno_sets_mid$top_SNP)
 
-# -----------------------------
+
 # 4) Allele sizes (from the UNFILTERED geno_sets!)
-#    so filtering SVs doesn’t shrink allele_size
-# -----------------------------
+
 allele_sizes <- geno_sets %>%
   distinct(top_SNP, allele, genotype) %>%
   count(top_SNP, allele, name = "allele_size")
@@ -108,10 +87,8 @@ majors <- allele_sizes %>%
   ungroup() %>%
   transmute(top_SNP, major_allele = allele)
 
-# -----------------------------
 # 5) Perfect-on-allele test using the mid-frequency set
-# -----------------------------
-# Long form (drop "none")
+
 sv_long <- geno_sets_mid %>%
   unnest_longer(svs, values_to = "sv_name") %>%
   mutate(sv_name = na_if(sv_name, ""),
@@ -162,9 +139,7 @@ sv_any_flag <- sv_per_allele %>%
     .groups = "drop"
   )
 
-# -----------------------------
-# 6) Summaries
-# -----------------------------
+
 overall_total_pairs   <- nrow(sv_space)
 overall_perfect_pairs <- nrow(distinct(sv_perfect_any_allele, top_SNP, sv_name))
 overall_major_pairs   <- sv_perfect_any_allele %>% summarise(n = sum(matches_major)) %>% pull(n)
@@ -205,40 +180,9 @@ sv_catalog %>%
   slice_max(n_sv, n = 5, with_ties = TRUE) %>%
   ungroup()
 
-# -----------------------------
-# 7) Save
-# -----------------------------
+
 write.csv(overall_summary, "overall_summary_test07.30.csv", row.names = FALSE)
 
-# NOTE: geno_sets_mid / sv_catalog have list-columns (sv lists). CSV flattens poorly.
-# Prefer RDS for round-trip fidelity:
-write_rds(geno_sets_mid, "geno_sets_mid_test07.30.rds")
-write_rds(sv_catalog,    "sv_catalog_test07.30.rds")
-
-# If you must write CSV, unnest first:
-geno_sets_mid_long <- geno_sets_mid %>%
-  unnest_longer(svs, values_to = "sv_name")
-write.csv(geno_sets_mid_long, "geno_sets_mid_test07.30.long.csv", row.names = FALSE)
-
-
-
-# Create the table
-contingency_table <- matrix(
-  c(53, 2942,
-    535, 7859),
-  nrow = 2,
-  byrow = TRUE,
-  dimnames = list(
-    Group = c("Control", "Test"),
-    Outcome = c("Perfect", "NotPerfect")
-  )
-)
-
-# View table
-contingency_table
-
-# Fisher's exact test
-fisher.test(contingency_table)
 
 
 

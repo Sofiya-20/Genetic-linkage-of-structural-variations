@@ -2,14 +2,13 @@ library(data.table)
 library(dplyr)
 library(readr)
 library(ggplot2)
-setwd("~/tre1_eqtl/alleqtls_analysis/analysis_08.25")
-write.csv(map_dt, "map_dt.csv")
+setwd("~/Documents/GitHub/Genetic-linkage-of-structural-variations/Step1_control_selection")
 
-control_positions = fread("~/tre1_eqtl/alleqtls_analysis/finalsets/noneandtrans_control/control_positions.csv", data.table = F)
+control_positions = fread("control_positions.csv", data.table = F)
 
 control_positions = control_positions %>% mutate(ext_start = pmax(0, start - 1e6), ext_end = end + 1e6 )
 
-map_dt = fread("~/tre1_eqtl/alleqtls_analysis/analysis_08.25/map_dt.csv", data.table = F)
+map_dt = fread("map_dt.csv", data.table = F)
 
 cand <- copy(control_positions) %>% as.data.table()
 
@@ -30,10 +29,10 @@ cand_pool <- foverlaps(snps_iv, cand, nomatch = 0L)  # SNPs that fall in any gen
 ## plink --bfile bugeater_693geno_filter2_maf_het  --extract control_
 ##selected_quantiles.txt --freq --out control_selected_quantiles
 
-cis_maf <- read_table("~/tre1_eqtl/alleqtls_analysis/finalsets/testset_07.30/cis_SNP_freq.frq") %>%
+cis_maf <- read_table("~/Documents/GitHub/Genetic-linkage-of-structural-variations/Step1_control_selection/files/cis_SNP_freq.frq") %>%
   select(SNP, MAF) %>% mutate(SNP = trimws(SNP))
 
-all_maf <- read_table("~/tre1_eqtl/alleqtls_analysis/analysis_08.25/all_snps_freq_exceptcis.frq") %>%  # or freq for all SNPs in your map
+all_maf <- read_table("all_snps_freq_exceptcis.frq") %>%  # or freq for all SNPs in your map
   select(SNP, MAF) %>% mutate(SNP = trimws(SNP))
 
 # Attach MAF to control candidate pool
@@ -101,7 +100,7 @@ plot_df <- bind_rows(
 
 
 write.csv(control_selected, 'control_selected_quantiles.csv')
-quantiles = fread("~/tre1_eqtl/alleqtls_analysis/analysis_08.25/control_selected_quantiles.csv", data.table = F)
+quantiles = fread("~/Documents/GitHub/Genetic-linkage-of-structural-variations/Step1_control_selection/files/control_selected_quantiles.csv", data.table = F)
 
 plot_df2 = bind_rows(cis_maf %>% mutate(dataset = "cis"),
                      quantiles %>% select(MAF) %>% mutate(dataset = "control")
