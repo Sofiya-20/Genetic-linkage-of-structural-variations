@@ -108,26 +108,6 @@ ggplot(plot_df2, aes(MAF, color = dataset, fill = dataset)) +
        subtitle = paste0("KS p = ", signif(ks$p.value, 3))) +
   theme_minimal(base_size = 12)
 
-ggplot(plot_df2, aes(x = dataset, y = MAF, fill = dataset)) +
-  geom_boxplot(alpha = 0.6, width = 0.6, outlier.shape = 16, outlier.alpha = 0.4) +
-  labs(x = "Dataset", y = "Minor Allele Frequency") +
-  theme_minimal(base_size = 14) +
-  theme(legend.position = "none")
-
-ggplot(plot_df2, aes(x = dataset, y = MAF, fill = dataset)) +
-  geom_boxplot(alpha = 0.6, width = 0.6, outlier.shape = NA) +
-  geom_jitter(width = 0.2, alpha = 0.2, size = 0.5) +
-  labs(x = "Dataset", y = "Minor Allele Frequency") +
-  theme_minimal(base_size = 14) +
-  theme(legend.position = "none")
-
-ggplot(plot_df2, aes(x = dataset, y = MAF, fill = dataset)) +
-  geom_violin(alpha = 0.4, trim = TRUE) +
-  geom_boxplot(width = 0.15, outlier.shape = NA, alpha = 0.7) +
-  labs(x = "Dataset", y = "Minor Allele Frequency") +
-  theme_minimal(base_size = 14) +
-  theme(legend.position = "none")
-
 
 
 
