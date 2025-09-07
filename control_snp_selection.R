@@ -12,6 +12,7 @@ control_positions = control_positions %>% mutate(ext_start = pmax(0, start - 1e6
 map_dt = fread("~/tre1_eqtl/alleqtls_analysis/analysis_08.25/map_dt.csv", data.table = F)
 
 cand <- copy(control_positions) %>% as.data.table()
+
 cand = cand %>% select(gene, chr, ext_start, ext_end)
 #filtering snps in the extended overlap region
 snps_iv <- copy(map_dt)[, `:=`(ext_start = pos, ext_end = pos)]
@@ -25,6 +26,10 @@ setkey(snps_iv, chr,ext_start, ext_end)
 cand_pool <- foverlaps(snps_iv, cand, nomatch = 0L)  # SNPs that fall in any gene window
 
 #getting the MAF of both from plink
+##plink –bfile  "bugeater_693geno_filter2_maf_het"--exclude “cissnps.txt”--recode A--out “all_snps_outputexceptcis"
+## plink --bfile bugeater_693geno_filter2_maf_het  --extract control_
+##selected_quantiles.txt --freq --out control_selected_quantiles
+
 cis_maf <- read_table("~/tre1_eqtl/alleqtls_analysis/finalsets/testset_07.30/cis_SNP_freq.frq") %>%
   select(SNP, MAF) %>% mutate(SNP = trimws(SNP))
 
@@ -102,11 +107,14 @@ plot_df2 = bind_rows(cis_maf %>% mutate(dataset = "cis"),
                      quantiles %>% select(MAF) %>% mutate(dataset = "control")
 )
 
+#plot to see the MAF density distribution
 ggplot(plot_df2, aes(MAF, color = dataset, fill = dataset)) +
   geom_density(alpha = 0.3) +
   labs(x = "Minor Allele Frequency", y = "Density",
        subtitle = paste0("KS p = ", signif(ks$p.value, 3))) +
   theme_minimal(base_size = 12)
+
+
 
 
 
