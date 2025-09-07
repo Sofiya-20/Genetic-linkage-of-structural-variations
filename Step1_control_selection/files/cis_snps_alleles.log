@@ -1,0 +1,26 @@
+PLINK v1.90b4 64-bit (20 Mar 2017)
+Options in effect:
+  --bfile bugeater_693geno_filter2_maf_het
+  --extract cis_snps.txt
+  --out cis_snps_alleles
+  --recode A
+
+Hostname: login1.swan.hcc.unl.edu
+Working directory: /lustre/work/schnablelab/sofiya/tre1_eqtl/re_analysis07.15/plink
+Start time: Wed Jul 30 16:36:52 2025
+
+Random number seed: 1753911412
+256738 MB RAM detected; reserving 128369 MB for main workspace.
+9673152 variants loaded from .bim file.
+693 people (0 males, 0 females, 693 ambiguous) loaded from .fam.
+Ambiguous sex IDs written to cis_snps_alleles.nosex .
+--extract: 16459 variants remaining.
+Warning: At least 349 duplicate IDs in --extract file.
+Using 1 thread (no multithreaded calculations invoked).
+Before main variant filters, 693 founders and 0 nonfounders present.
+Calculating allele frequencies... done.
+16459 variants and 693 people pass filters and QC.
+Note: No phenotypes present.
+--recode A to cis_snps_alleles.raw ... done.
+
+End time: Wed Jul 30 16:37:00 2025
