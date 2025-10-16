@@ -1,0 +1,2 @@
+"total_snps_in_dataset","n_snps_with_perfect_sv_association","pct_snps_with_perfect","n_snps_perfect_major_only","n_snps_perfect_minor_only","n_snps_perfect_both_alleles","pct_major_only","pct_minor_only","pct_both_alleles","total_sv_allele_pairs","avg_svs_per_snp"
+10695,478,4.47,197,278,3,1.84,2.6,0.03,535,1.12
