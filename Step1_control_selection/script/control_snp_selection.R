@@ -106,7 +106,7 @@ plot_df2 = bind_rows(cis_maf %>% mutate(dataset = "cis"),
                      quantiles %>% select(MAF) %>% mutate(dataset = "control")
 )
 
-#plot to see the MAF density distribution
+#plot 
 ggplot(plot_df2, aes(MAF, color = dataset, fill = dataset)) +
   geom_density(alpha = 0.3) +
   labs(x = "Minor Allele Frequency", y = "Density",
